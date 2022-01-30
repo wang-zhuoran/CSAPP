@@ -100,7 +100,7 @@ int allOddBits(int x)
  */
 int negate(int x)
 {
-	return ~x + 1;
+  return ~x + 1;
 }
 ```
 这个就是公式了。认真读课本就好。
@@ -134,8 +134,8 @@ int isAsciiDigit(int x) {
  */
 int conditional(int x, int y, int z)
 {
-    int temp = !!x;
-	return (temp & y) | (~temp & z);
+  int temp = !!x;
+  return (temp & y) | (~temp & z);
 }
 ```
 这里感觉有点问题...以后再回来更新吧...
@@ -150,10 +150,10 @@ int conditional(int x, int y, int z)
  */
 int isLessOrEqual(int x, int y)
 {
-	int sx = (x >> 31) & 0x1;  // sign bit of x
- 	int sy = (y >> 31) & 0x1;  // sign bit of y
-  	int sdiff = ((y + (~x + 1)) >> 31) & 0x1;  // sign bit of y-x
-  	return (((sx ^ sy) & sx) | !sdiff & !(sx ^ sy));
+  int sx = (x >> 31) & 0x1;  // sign bit of x
+  int sy = (y >> 31) & 0x1;  // sign bit of y
+  int sdiff = ((y + (~x + 1)) >> 31) & 0x1;  // sign bit of y-x
+  return (((sx ^ sy) & sx) | !sdiff & !(sx ^ sy));
 }
 ```
 基本的思路就是，将不等式转化为```y - x >= 0```  
