@@ -3,8 +3,13 @@
 Computer System: A Programmer Perspective  
 Labs for CMU CS15-213
 ## 目录
-- [Data Lab](https://github.com/wang-zhuoran/CSAPP/blob/main/Notes/datalab.md)
-
+- [X] [Data Lab](https://github.com/wang-zhuoran/CSAPP/blob/main/Notes/datalab.md) (Finished Date: 2022.1.30)
+- [ ] Bomb Lab
+- [ ] Attack Lab
+- [ ] Cache Lab
+- [ ] Shell Lab
+- [ ] Malloc Lab
+- [ ] Proxy Lab
 
 
 ## Reference
