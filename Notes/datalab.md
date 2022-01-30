@@ -100,6 +100,69 @@ int allOddBits(int x)
  */
 int negate(int x)
 {
+	return ~x + 1;
+}
+```
+这个就是公式了。认真读课本就好。
+## 3.
+###  (1) isAsciiDigit
+```C
+/* 
+ * isAsciiDigit - return 1 if 0x30 <= x <= 0x39 (ASCII codes for characters '0' to '9')
+ *   Example: isAsciiDigit(0x35) = 1.
+ *            isAsciiDigit(0x3a) = 0.
+ *            isAsciiDigit(0x05) = 0.
+ *   Legal ops: ! ~ & ^ | + << >>
+ *   Max ops: 15
+ *   Rating: 3
+ */
+int isAsciiDigit(int x)
+{
 	return 2;
 }
 ```
+### (2) conditional
+```C
+/* 
+ * conditional - same as x ? y : z 
+ *   Example: conditional(2,4,5) = 4
+ *   Legal ops: ! ~ & ^ | + << >>
+ *   Max ops: 16
+ *   Rating: 3
+ */
+int conditional(int x, int y, int z)
+{
+    int temp = !!x;
+	return (temp & y) | (~temp & z);
+}
+```
+这里感觉有点问题...以后再回来更新吧...
+### (3) isLessOrEqual
+```C
+/* 
+ * isLessOrEqual - if x <= y  then return 1, else return 0 
+ *   Example: isLessOrEqual(4,5) = 1.
+ *   Legal ops: ! ~ & ^ | + << >>
+ *   Max ops: 24
+ *   Rating: 3
+ */
+int isLessOrEqual(int x, int y)
+{
+	int sx = (x >> 31) & 0x1;  // sign bit of x
+ 	int sy = (y >> 31) & 0x1;  // sign bit of y
+  	int sdiff = ((y + (~x + 1)) >> 31) & 0x1;  // sign bit of y-x
+  	return (((sx ^ sy) & sx) | !sdiff & !(sx ^ sy));
+}
+```
+基本的思路就是，将不等式转化为```y - x >= 0```  
+但是这样做，会产生溢出的问题。  
+可能有人会直接认为，```return !sdiff;```就好了啊，但是并不是这样。x和y有4种情况：
+```
+check 4 cases:
+1. x < 0, y >= 0 => x <= y => return 1
+2. x >= 0, y < 0 => x >= y => return 0
+3. x < 0, y < 0 => y - x >= 0 iff. y >= x, there will be no overflow
+4. x >= 0, y >= 0 => same case as 3
+```
+尤其是第二种case, 取```x = 1<<31, y = -1```时，```return !sdiff;```返回1  
+因此需要特别排除这种溢出情况
