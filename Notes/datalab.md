@@ -167,4 +167,187 @@ check 4 cases:
 4. x >= 0, y >= 0 => same case as 3
 ```
 尤其是第二种case, 取```x = 1<<31, y = -1```时，```return !sdiff;```返回1  
-因此需要特别排除这种溢出情况
+因此需要特别排除这种溢出情况  
+## 4
+### (1) logicalNeg
+```C
+/* 
+ * logicalNeg - implement the ! operator, using all of 
+ *              the legal operators except !
+ *   Examples: logicalNeg(3) = 0, logicalNeg(0) = 1
+ *   Legal ops: ~ & ^ | + << >>
+ *   Max ops: 12
+ *   Rating: 4 
+ */
+int logicalNeg(int x)
+{
+  int negX = ~x + 1;
+  int sign = (negX | x) >> 31;
+	return sign + 1;
+}
+```
+分为两种情况考虑，x是0或者非0  
+```C
+int x = 0b0001;
+int negX = 0b1111;
+```
+这样取或之后，符号位一定是1。再右移31位，取得符号位，如果是0的话，符号位一定是0了。因此最后要+1  
+### (2) howManyBits
+```C
+/* howManyBits - return the minimum number of bits required to represent x in
+ *             two's complement
+ *  Examples: howManyBits(12) = 5
+ *            howManyBits(298) = 10
+ *            howManyBits(-5) = 4
+ *            howManyBits(0)  = 1
+ *            howManyBits(-1) = 1
+ *            howManyBits(0x80000000) = 32
+ *  Legal ops: ! ~ & ^ | + << >>
+ *  Max ops: 90
+ *  Rating: 4
+ */
+int howManyBits(int x)
+{
+  int b16, b8, b4, b2, b1, b0;
+  int sign = x >> 31;  // signed bit, 0x0 if non-negative, 0xFFFFFFFF if negative
+  x = (sign & ~x) | (~sign & x);  // If is negative number, flip it.
+
+  b16 = !!(x >> 16) << 4;  // whether most significant 16 bits have 1. If yes, b16 =16, if not, b16 = 0
+  x = x >> b16;  // If yes, right shift 16 bits; if no, do not right shift.
+  b8 = !!(x >> 8) << 3;  // whether the rest most significant 8 bits have 1.
+  x = x >> b8;
+  b4 = !!(x >> 4) << 2;
+  x = x >> b4;
+  b2 = !!(x >> 2) << 1;
+  x = x >> b2;
+  b1 = !!(x >> 1);
+  x = x >> b1;
+  b0 = x;
+  return b16 + b8 + b4 + b2 + b1 + b0 + 1;  // 1 is the sign bit.
+}
+```
+### (3) floatScale2
+```C
+/* 
+ * floatScale2 - Return bit-level equivalent of expression 2*f for
+ *   floating point argument f.
+ *   Both the argument and result are passed as unsigned int's, but
+ *   they are to be interpreted as the bit-level representation of
+ *   single-precision floating point values.
+ *   When argument is NaN, return argument
+ *   Legal ops: Any integer/unsigned operations incl. ||, &&. also if, while
+ *   Max ops: 30
+ *   Rating: 4
+ */
+unsigned floatScale2(unsigned uf)
+{
+  unsigned s = (uf >> 31) & (0x1);
+  unsigned expr = (uf >> 23) & (0xff);
+  unsigned frac = uf & 0x7fffff;
+
+  //0
+  if (expr == 0 && frac == 0)
+  {
+    return uf;
+  }
+
+  //INF or NaN
+  if (expr == 0xff)
+  {
+    return uf;
+  }
+
+  //denormalized非规格化的数
+  if (expr == 0)
+  {
+    //E = expr - bias = expr - 127
+    frac = frac << 1;
+    return (s << 31) | frac;
+  }
+
+  //normalized规格化的数
+  expr++; //相当于×2
+  return (s << 31) | (expr << 23) | frac;
+
+}
+```
+### (4) floatFloat2Int
+```C
+/* 
+ * floatFloat2Int - Return bit-level equivalent of expression (int) f
+ *   for floating point argument f.
+ *   Argument is passed as unsigned int, but
+ *   it is to be interpreted as the bit-level representation of a
+ *   single-precision floating point value.
+ *   Anything out of range (including NaN and infinity) should return
+ *   0x80000000u.
+ *   Legal ops: Any integer/unsigned operations incl. ||, &&. also if, while
+ *   Max ops: 30
+ *   Rating: 4
+ */
+int floatFloat2Int(unsigned uf)
+{
+
+  int exp = (uf >> 23) & 0xFF;
+  int frac = uf & 0x7FFFFF;
+  int sign = uf & (1 << 31); // negative 0x80000000, positive 0x0.
+
+  if (exp == 0xFF)
+    return 0x80000000u; // if out of range, return 0x80000000
+
+  if (exp == 0x0)
+    return 0; // if de-norm number, means its range is (-1, 1)
+
+  int frac1 = frac | 0x800000; // Add the hidden 1 in front of frac
+  int biasedExp = exp - 127;   // E = e - Bias, Bias = 127 = 0x7F, -bias = 0xFFFFFF81
+
+  if (biasedExp > 31)
+    return 0x80000000;
+  else if (biasedExp < 0)
+    return 0;
+
+  if (biasedExp > 23)
+    frac1 <<= (biasedExp - 23);
+  else
+    frac1 >>= (23 - biasedExp);
+
+  if (sign)
+    return ~frac1 + 1; // if negative number
+  else if (frac1 >> 31)
+    return 0x80000000; // if frac1 overflows, return 0x80000000;
+  else
+    return frac1;
+}
+
+```
+
+
+### (5) floatPower2
+```C
+/* 
+ * floatPower2 - Return bit-level equivalent of the expression 2.0^x
+ *   (2.0 raised to the power x) for any 32-bit integer x.
+ *
+ *   The unsigned value that is returned should have the identical bit
+ *   representation as the single-precision floating-point number 2.0^x.
+ *   If the result is too small to be represented as a denorm, return
+ *   0. If too large, return +INF.
+ * 
+ *   Legal ops: Any integer/unsigned operations incl. ||, &&. Also if, while 
+ *   Max ops: 30 
+ *   Rating: 4
+ */
+unsigned floatPower2(int x)
+{
+  int exp = x + 127;
+  if (exp <= 0)
+  {
+    return 0;
+  }
+  if (exp >= 255)
+  {
+    return 0xff << 23;
+  }
+  return exp << 23;
+}
+```
