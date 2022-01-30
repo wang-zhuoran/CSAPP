@@ -116,9 +116,11 @@ int negate(int x)
  *   Max ops: 15
  *   Rating: 3
  */
-int isAsciiDigit(int x)
-{
-	return 2;
+int isAsciiDigit(int x) {
+  int r1 = (0x39 + (~x + 1)) >> 31;  // if true r1 == 0x0, otherwise, r1 = 0xFFFFFFFF
+  int r2 = (x + (~0x30 + 1)) >> 31;  // if true r2 == 0x0, otherwise, r2 = 0xFFFFFFFF
+
+  return (!r1) & (!r2);  
 }
 ```
 ### (2) conditional
