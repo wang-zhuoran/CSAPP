@@ -4,7 +4,7 @@ Computer System: A Programmer Perspective
 Labs for CMU CS15-213
 ## 目录
 - [X] [Data Lab](https://github.com/wang-zhuoran/CSAPP/blob/main/Notes/datalab.md) (Finished Date: 2022.1.30)
-- [ ] Bomb Lab
+- [ ] [Bomb Lab](https://github.com/wang-zhuoran/CSAPP/blob/main/Notes/bomblab.md)
 - [ ] Attack Lab
 - [ ] Cache Lab
 - [ ] Shell Lab
